@@ -10,10 +10,10 @@ class NeuralNetwork(object):
 
         # Initialize weights
         self.weights_input_to_hidden = np.random.normal(0.0, self.input_nodes**-0.5,
-                                       (self.input_nodes, self.hidden_nodes))
+                                       (self.input_nodes, self.hidden_nodes)) # weights_input_to_hidden.shape = (s_1,s_2)
 
         self.weights_hidden_to_output = np.random.normal(0.0, self.hidden_nodes**-0.5,
-                                       (self.hidden_nodes, self.output_nodes))
+                                       (self.hidden_nodes, self.output_nodes)) # weights_hidden_to_output.shape = (s_2,s_3)
         self.lr = learning_rate
 
         #### TODO: Set self.activation_function to your implemented sigmoid function ####
@@ -41,10 +41,10 @@ class NeuralNetwork(object):
             targets: 1D array of target values
 
         '''
-        n_records = features.shape[0]
-        delta_weights_i_h = np.zeros(self.weights_input_to_hidden.shape)
-        delta_weights_h_o = np.zeros(self.weights_hidden_to_output.shape)
-        for X, y in zip(features, targets):
+        n_records = features.shape[0] # features.shape = (M,n), n_records = M
+        delta_weights_i_h = np.zeros(self.weights_input_to_hidden.shape) # delta_weights_i_h.shape = (s_1,s_2)
+        delta_weights_h_o = np.zeros(self.weights_hidden_to_output.shape) # delta_weights_h_o.shape = (s_2,s_3)
+        for X, y in zip(features, targets): # X.shape = (1,n), y = scalar
 
             final_outputs, hidden_outputs = self.forward_pass_train(X)  # Implement the forward pass function below
             # Implement the backproagation function below
@@ -64,14 +64,19 @@ class NeuralNetwork(object):
         #### Implement the forward pass here ####
         ### Forward pass ###
         # TODO: Hidden layer - Replace these values with your calculations.
-        hidden_inputs = None # signals into hidden layer
-        hidden_outputs = None # signals from hidden layer
+
+        # X.shape = (1,n) = (1,s_1)
+        # self.weights_input_to_hidden.shape = (s_1,s_2)
+        # self.weights_hidden_to_output.shape = (s_2,s_3) = (s_2,1)
+
+        hidden_inputs = np.matmul(X,self.weights_input_to_hidden) # signals into hidden layer
+        hidden_outputs = self.activation_function(hidden_inputs) # signals from hidden layer
 
         # TODO: Output layer - Replace these values with your calculations.
-        final_inputs = None # signals into final output layer
-        final_outputs = None # signals from final output layer
+        final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
+        final_outputs = self.activation_function(final_inputs) # signals from final output layer
 
-        return final_outputs, hidden_outputs
+        return final_outputs, hidden_outputs # final_outputs.shape = (1,1), hidden_outputs = (1,s_2)
 
     def backpropagation(self, final_outputs, hidden_outputs, X, y, delta_weights_i_h, delta_weights_h_o):
         ''' Implement backpropagation
