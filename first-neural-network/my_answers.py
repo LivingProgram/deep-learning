@@ -115,7 +115,10 @@ class NeuralNetwork(object):
 
         # TODO: Output error - Replace this value with your calculations.
         # (1,s_3) - (1,s_3) = (1,s_3)
-        error = y[None,:] - final_outputs # Output layer error is the difference between desired target and actual output.
+        try: # for when y is a np.ndarray with shape = (1,), specifically in the unit tests
+            error = y[None,:] - final_outputs # Output layer error is the difference between desired target and actual output.
+        except: # for when y is simply a float, specifically when training network from pandas df
+            error = np.array([[y]]) - final_outputs
         # error.shape = (1,s_3)
 
         # TODO: Calculate the hidden layer's contribution to the error
@@ -174,7 +177,7 @@ class NeuralNetwork(object):
         # TODO: Output layer - Replace these values with the appropriate calculations.
         final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
         final_outputs = final_inputs # signals from final output layer, do not apply sigmoid as final layer has activation function f(x)=x
-        
+
         return final_outputs
 
 
