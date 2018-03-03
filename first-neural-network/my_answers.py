@@ -81,7 +81,8 @@ class NeuralNetwork(object):
 
         # (1,s_2) x (s_2,s_3) = (1,s_3)
         final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
-        final_outputs = final_inputs # signals from final output layer
+        # final_outputs = self.activation_function(final_inputs)
+        final_outputs = final_inputs # signals from final output layer, do not apply sigmoid as final layer has activation function f(x)=x
         # final_inputs.shape = final_outputs.shape = (1,s_3)
 
         return final_outputs, hidden_outputs
@@ -124,7 +125,8 @@ class NeuralNetwork(object):
 
         # TODO: Backpropagated error terms - Replace these values with your calculations.
         # (1,s_3) * (1,s_3) * (1 - (1,s_3)) = (1,s_3)
-        output_error_term = error
+        # output_error_term = error * final_outputs * (1 - final_outputs)
+        output_error_term = error # do not multiply by activations because the activation of final layer is simply f(x)=x
         # output_error_term.shape = (1,s_3)
 
         # (1,s_2) * (1,s_2) * (1 - (1,s_2)) = (1,s_2)
@@ -171,14 +173,8 @@ class NeuralNetwork(object):
 
         # TODO: Output layer - Replace these values with the appropriate calculations.
         final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
-        final_outputs = final_inputs # signals from final output layer
-
-        # hidden_inputs = np.dot(features,self.weights_input_to_hidden)
-        # hidden_outputs = self.activation_function(hidden_inputs)
-
-        # final_inputs = np.dot(hidden_outputs, self.weights_hidden_to_output)
-        # final_outputs = self.activation_function(final_inputs)
-
+        final_outputs = final_inputs # signals from final output layer, do not apply sigmoid as final layer has activation function f(x)=x
+        
         return final_outputs
 
 
