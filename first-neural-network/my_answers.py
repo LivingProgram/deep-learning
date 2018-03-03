@@ -81,7 +81,7 @@ class NeuralNetwork(object):
 
         # (1,s_2) x (s_2,s_3) = (1,s_3)
         final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
-        final_outputs = self.activation_function(final_inputs) # signals from final output layer
+        final_outputs = final_inputs # signals from final output layer
         # final_inputs.shape = final_outputs.shape = (1,s_3)
 
         return final_outputs, hidden_outputs
@@ -124,7 +124,7 @@ class NeuralNetwork(object):
 
         # TODO: Backpropagated error terms - Replace these values with your calculations.
         # (1,s_3) * (1,s_3) * (1 - (1,s_3)) = (1,s_3)
-        output_error_term = error * final_outputs * (1 - final_outputs)
+        output_error_term = error
         # output_error_term.shape = (1,s_3)
 
         # (1,s_2) * (1,s_2) * (1 - (1,s_2)) = (1,s_2)
@@ -164,24 +164,20 @@ class NeuralNetwork(object):
             features: 1D array of feature values
         '''
 
-        """
         #### Implement the forward pass here ####
         # TODO: Hidden layer - replace these values with the appropriate calculations.
         hidden_inputs = np.matmul(features,self.weights_input_to_hidden) # signals into hidden layer
         hidden_outputs = self.activation_function(hidden_inputs) # signals from hidden layer
-        print(features)
-        print(self.weights_input_to_hidden)
-        print(hidden_inputs)
 
         # TODO: Output layer - Replace these values with the appropriate calculations.
         final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
-        final_outputs = self.activation_function(final_inputs) # signals from final output layer
-        """
-        hidden_inputs = np.dot(features,self.weights_input_to_hidden)
-        hidden_outputs = self.activation_function(hidden_inputs)
+        final_outputs = final_inputs # signals from final output layer
 
-        final_inputs = np.dot(hidden_outputs, self.weights_hidden_to_output)
-        final_outputs = self.activation_function(final_inputs)
+        # hidden_inputs = np.dot(features,self.weights_input_to_hidden)
+        # hidden_outputs = self.activation_function(hidden_inputs)
+
+        # final_inputs = np.dot(hidden_outputs, self.weights_hidden_to_output)
+        # final_outputs = self.activation_function(final_inputs)
 
         return final_outputs
 
