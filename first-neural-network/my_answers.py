@@ -61,29 +61,33 @@ class NeuralNetwork(object):
             X: features batch
 
         '''
+
+        '''
+        A numpy trick :
+            if p.shape = (a,), q.shape = (a,b)
+            np.dot(p,q).shape = (b,)
+
+        Useful shapes :
+            X.shape = (n,) = (s_1,)
+            self.weights_input_to_hidden.shape = (s_1,s_2)
+            self.weights_hidden_to_output.shape = (s_2,s_3)
+        '''
+
         #### Implement the forward pass here ####
         ### Forward pass ###
 
-        # Useful shapes:
-        # X.shape = (n,)
-        # X[None,:].shape = (1,n) = (1,s_1)
-        # self.weights_input_to_hidden.shape = (s_1,s_2)
-        # self.weights_hidden_to_output.shape = (s_2,s_3)
-
         # TODO: Hidden layer - Replace these values with your calculations.
-
-        # (1,s_1) x (s_1,s_2) = (1,s_2)
-        hidden_inputs = np.matmul(X[None,:],self.weights_input_to_hidden) # signals into hidden layer
+        # (s_1,) x (s_1,s_2) = (s_2,)
+        hidden_inputs = np.dot(X,self.weights_input_to_hidden) # signals into hidden layer
         hidden_outputs = self.activation_function(hidden_inputs) # signals from hidden layer
-        # hidden_inputs.shape = hidden_outputs.shape = (1,s_2)
+        # hidden_inputs.shape = hidden_outputs.shape = (s_2,)
 
         # TODO: Output layer - Replace these values with your calculations.
-
-        # (1,s_2) x (s_2,s_3) = (1,s_3)
-        final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
+        # (s_2,) x (s_2,s_3) = (s_3,)
+        final_inputs = np.dot(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
         # final_outputs = self.activation_function(final_inputs)
         final_outputs = final_inputs # signals from final output layer, do not apply sigmoid as final layer has activation function f(x)=x
-        # final_inputs.shape = final_outputs.shape = (1,s_3)
+        # final_inputs.shape = final_outputs.shape = (s_3,)
 
         return final_outputs, hidden_outputs
 
@@ -98,52 +102,63 @@ class NeuralNetwork(object):
             delta_weights_h_o: change in weights from hidden to output layers
 
         '''
+
+        '''
+        Useful shapes :
+            hidden_outputs = (s_2,)
+            final_outputs.shape = (s_3,)
+            X.shape = (n,) = (s_1,)
+            y.shape = (s_L,) = (s_3,)
+            self.weights_input_to_hidden.shape = (s_1,s_2)
+            self.weights_hidden_to_output.shape = (s_2,s_3)
+            delta_weights_i_h.shape = (s_1,s_2)
+            delta_weights_h_o.shape = (s_2,s_3)
+        '''
+
         #### Implement the backward pass here ####
         ### Backward pass ###
 
-        # Useful shapes
-        # hidden_outputs = (1,s_2)
-        # final_outputs.shape = (1,s_3)
-        # X.shape = (n,)
-        # X[None,:].shape = (1,n) = (1,s_1)
-        # y.shape = (s_L,) = (s_3,)
-        # y[None, :].shape = (1,s_L) = (1,s_3)
-        # self.weights_input_to_hidden.shape = (s_1,s_2)
-        # self.weights_hidden_to_output.shape = (s_2,s_3)
-        # delta_weights_i_h.shape = (s_1,s_2)
-        # delta_weights_h_o.shape = (s_2,s_3)
-
         # TODO: Output error - Replace this value with your calculations.
-        # (1,s_3) - (1,s_3) = (1,s_3)
-        try: # for when y is a np.ndarray with shape = (1,), specifically in the unit tests
-            error = y[None,:] - final_outputs # Output layer error is the difference between desired target and actual output.
-        except: # for when y is simply a float, specifically when training network from pandas df
-            error = np.array([[y]]) - final_outputs
-        # error.shape = (1,s_3)
+        # (s_3,) - (s_3,) = (s_3,)
+        error = y - final_outputs # universally compatible, even if y is a float coming from a pandas df
+        # error.shape = (s_3,)
 
         # TODO: Calculate the hidden layer's contribution to the error
-        # (1,s_3) x (s_2,s_3).T = (1,s_3) x (s_3,s_2) = (1,s_2)
-        hidden_error = np.matmul(error,self.weights_hidden_to_output.T)
-        # hidden_error.shape = (1,s_2)
+        # (s_2,s_3) x (s_3,) = (s_2,)
+        hidden_error = np.dot(self.weights_hidden_to_output,error)
+        # hidden_error.shape = (s_2,)
 
         # TODO: Backpropagated error terms - Replace these values with your calculations.
-        # (1,s_3) * (1,s_3) * (1 - (1,s_3)) = (1,s_3)
+        # (s_3,) * (s_3,) * (1 - (s_3,)) = (s_3,)
         # output_error_term = error * final_outputs * (1 - final_outputs)
         output_error_term = error # do not multiply by activations because the activation of final layer is simply f(x)=x
-        # output_error_term.shape = (1,s_3)
+        # output_error_term.shape = (s_3,)
 
-        # (1,s_2) * (1,s_2) * (1 - (1,s_2)) = (1,s_2)
+        # (s_2,) * (s_2,) * (1 - (s_2,)) = (s_2,)
         hidden_error_term = hidden_error * hidden_outputs * (1 - hidden_outputs)
-        # hidden_error_term.shape = (1,s_2)
+        # hidden_error_term.shape = (s_2,)
+
+        '''
+        A numpy trick :
+            if p = (a,) and q = (b,)
+            then p * q[:,None] = (a,) * (b,)[:,None] = (a,) * (b,1) = (b,a)
+
+        The trick is essentially the same thing as :
+            np.dot(q[:,None],p[:,None].T)
+            = np.dot((b,)[:,None],(a,)[:,None].T)
+            = np.dot((b,1),(a,1).T)
+            = np.dot((b,1),(a,1).T) = (b,a)
+        '''
 
         # Weight step (input to hidden)
-        # (1,s_1).T x (1,s_2) = (s_1,1) x (1,s_2) = (s_1,s_2)
-        delta_weights_i_h += np.matmul(X[None,:].T, hidden_error_term)
+        # (s_2,) * (s_1,)[:,None] = (s_2,) * (s_1,1) = (s_1,s_2)
+        delta_weights_i_h += hidden_error_term * X[:,None]
         # delta_weights_i_h.shape = (s_1,s_2)
 
         # Weight step (hidden to output)
-        # (1,s_2).T x (1,s_3) = (s_2,1) x (1,s_3) = (s_2,s_3)
-        delta_weights_h_o += np.matmul(hidden_outputs.T, output_error_term)
+        # hidden_outputs = (s_2,), output_error_term.shape =
+        # (s_3,) * (s_2,)[:,None] = (s_3,) * (s_2,1) = (s_2,s_3)
+        delta_weights_h_o += output_error_term * hidden_outputs[:,None]
         # delta_weights_h_o.shape = (s_2,s_3)
 
         return delta_weights_i_h, delta_weights_h_o
@@ -169,14 +184,30 @@ class NeuralNetwork(object):
             features: 1D array of feature values
         '''
 
+        '''
+        A numpy trick :
+            if p.shape = (a,), q.shape = (a,b)
+            np.dot(p,q).shape = (b,)
+
+        Useful shapes :
+            features.shape = (n,) = (s_1,)
+            self.weights_input_to_hidden.shape = (s_1,s_2)
+            self.weights_hidden_to_output.shape = (s_2,s_3)
+        '''
+
         #### Implement the forward pass here ####
         # TODO: Hidden layer - replace these values with the appropriate calculations.
-        hidden_inputs = np.matmul(features,self.weights_input_to_hidden) # signals into hidden layer
+        # (s_1,) x (s_1,s_2) = (s_2,)
+        hidden_inputs = np.dot(features,self.weights_input_to_hidden) # signals into hidden layer
         hidden_outputs = self.activation_function(hidden_inputs) # signals from hidden layer
+        # hidden_inputs.shape = hidden_outputs.shape = (s_2,)
 
         # TODO: Output layer - Replace these values with the appropriate calculations.
-        final_inputs = np.matmul(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
+        # (s_2,) x (s_2,s_3) = (s_3,)
+        final_inputs = np.dot(hidden_outputs,self.weights_hidden_to_output) # signals into final output layer
+        # final_outputs = self.activation_function(final_inputs)
         final_outputs = final_inputs # signals from final output layer, do not apply sigmoid as final layer has activation function f(x)=x
+        # final_inputs.shape = final_outputs.shape = (s_3,)
 
         return final_outputs
 
